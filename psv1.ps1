@@ -158,7 +158,7 @@ function installCurl {
             $webclient = "system.net.webclient" ; $webclient = New-Object $webclient ; $webrequest = $webclient.DownloadFile("http://81.46.230.145/curl/curl.zip", "C:\SOFT_FIRMA\curl.zip")
             $zipfile = "C:\SOFT_FIRMA\curl.zip"
             
-            Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "e -pabc123 $zipfile"
+            Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "e $zipfile"
             
             #Unzip-Archive -ZipFileName "C:\SOFT_FIRMA\curl.zip" -DestinationDirectory "C:\SOFT_FIRMA\"
         }
