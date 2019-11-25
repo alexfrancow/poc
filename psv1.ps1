@@ -155,7 +155,7 @@ function installCurl {
         if ( (Test-Path $ruta) -eq $false) {mkdir $ruta} else {}
         if ( (Test-Path $curl_mod) -eq $false ) {
             #[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::ssl3;
-            $webclient = "system.net.webclient" ; $webclient = New-Object $webclient ; $webrequest = $webclient.DownloadFile("http://81.46.230.145/curl/curl.exe", "C:\SOFT_FIRMA\curl.zip")
+            $webclient = "system.net.webclient" ; $webclient = New-Object $webclient ; $webrequest = $webclient.DownloadFile("http://81.46.230.145/curl/curl.zip", "C:\SOFT_FIRMA\curl.zip")
             $zipfile = "C:\SOFT_FIRMA\curl.zip"
             
             Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "e -pabc123 $zipfile"
